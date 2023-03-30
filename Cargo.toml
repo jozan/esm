@@ -1,0 +1,29 @@
+[package]
+name = "esm"
+version = "0.1.0"
+edition = "2021"
+authors = ["jr <johan@latehours.net>"]
+license = "GPL-3.0-only"
+description = "Unofficial Empty Epsilon Scenario Manager (https://github.com/jozan/esm)"
+repository = "https://github.com/jozan/esm"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+clap-verbosity-flag = "2.0.0"
+env_logger = "0.10.0"
+error-chain = "0.12.4"
+home = "0.5.4"
+log = "0.4.17"
+reqwest = "0.11.16"
+tempdir = "0.3.7"
+tempfile = "3.5.0"
+tokio = { version = "1.27.0", features = ["full"] }
+human_bytes = { version = "0.4", features = ["fast"] }
+dialoguer = { version = "0.10.3", features = [] }
+toml = "0.7.3"
+url = "2.3.1"
+serde = "1.0.159"
+serde_derive = "1.0.159"
