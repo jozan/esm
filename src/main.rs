@@ -4,13 +4,7 @@ use clap::{Parser, Subcommand};
 use dialoguer::Confirm;
 use error_chain::error_chain;
 use human_bytes::human_bytes;
-use std::{
-    fs,
-    fs::File,
-    io::{self, copy, BufRead},
-    path,
-    process::exit,
-};
+use std::{fs, fs::File, io::copy, process::exit};
 use tempfile::Builder;
 
 mod dirs;
@@ -18,6 +12,9 @@ use dirs::get_esm_scenarios_dir;
 
 mod config;
 use config::{create_config, get_config};
+
+mod scenario;
+use scenario::parse_scenario_metadata;
 
 error_chain! {
     foreign_links {
@@ -109,22 +106,19 @@ async fn main() -> Result<()> {
 
             for scenario in scenarios {
                 let len = scenario.metadata()?.len() as f64;
-                let scenario_name =
-                    scenario.file_name().to_str().unwrap().replace(".lua", "");
+                let scenario_file_name = scenario.file_name();
+                let scenario_name = scenario_file_name.to_str().unwrap_or(
+                    "Failed to convert file name to readable format",
+                );
+                let scenario_metadata =
+                    parse_scenario_metadata(&scenario.path())?;
 
-                // read scenario metadata from file
-                if let Ok(lines) = read_lines(scenario.path()) {
-                    for line in lines {
-                        if let Ok(line) = line {
-                            if line.starts_with("--") {
-                                println!("{}", line);
-                                continue;
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                }
+                println!("name: {}", scenario_metadata.name);
+                println!("description: {}", scenario_metadata.description);
+                println!(
+                    "long description: {}",
+                    scenario_metadata.description_long
+                );
 
                 println!(" - {} ({})", scenario_name, human_bytes(len));
             }
@@ -339,14 +333,6 @@ fn construct_url(identifier: &String) -> String {
     return format!(
         "https://raw.githubusercontent.com/daid/EmptyEpsilon/master/scripts/{identifier}.lua"
     );
-}
-
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<path::Path>,
-{
-    let file = fs::File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
 }
 
 #[test]
