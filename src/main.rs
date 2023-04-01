@@ -11,7 +11,7 @@ mod dirs;
 use dirs::get_esm_scenarios_dir;
 
 mod config;
-use config::{create_config, get_config};
+use config::{create_config, get_config, save_config};
 
 mod scenario;
 use scenario::parse_scenario_metadata;
@@ -242,9 +242,6 @@ async fn main() -> Result<()> {
             empty_epsilon_path: config_empty_epsilon_path,
             registry: config_registry,
         } => {
-            println!("{:?}", config_empty_epsilon_path);
-            println!("{:?}", config_registry);
-
             let mut config = get_config().unwrap_or_else(|error| {
                 if Confirm::new()
                     .with_prompt(
@@ -277,7 +274,7 @@ async fn main() -> Result<()> {
                             .into_os_string()
                             .into_string().unwrap_or_else(|error| {
                                 log::error!(
-                                "Could not save empty epsilon path ({:?}) error: {:?}",
+                                "Given empty epsilon path is not valid ({:?}) error: {:?}",
                                 config_empty_epsilon_path,
                                 error
                             );
@@ -285,6 +282,11 @@ async fn main() -> Result<()> {
                             });
 
                     config.empty_epsilon_path = Some(path);
+
+                    save_config(&config).unwrap_or_else(|error| {
+                        log::error!("Could not save config: {}", error);
+                        exit(1);
+                    });
                 }
                 Some(None) => {
                     log::info!("Reading empty_epsilon_path from config");

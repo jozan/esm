@@ -32,7 +32,12 @@ pub fn create_config() -> Result<Config, Box<dyn Error>> {
     Ok(config)
 }
 
-
+pub fn save_config(config: &Config) -> Result<(), Box<dyn Error>> {
+    let config_path = get_config_path();
+    let config_content = toml::to_string(&config)?;
+    fs::write(config_path, config_content)?;
+    Ok(())
+}
 fn get_config_path() -> std::path::PathBuf {
     get_esm_root_dir().join("config.toml")
 }
