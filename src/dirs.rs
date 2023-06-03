@@ -1,5 +1,6 @@
 use home::home_dir;
 use std::{fs, path, process::exit};
+use walkdir::WalkDir;
 
 pub fn get_esm_root_dir() -> path::PathBuf {
     let esm_root_dir = match home_dir() {
@@ -47,4 +48,46 @@ pub fn get_esm_scenarios_dir() -> path::PathBuf {
     }
 
     return esm_scenarios_dir;
+}
+
+pub fn is_in_empty_epsilon_dir() -> bool {
+    println!("Current dir: {:?}\n", std::env::current_dir());
+
+    let pwd = match std::env::current_dir() {
+        Ok(path) => path,
+        Err(error) => {
+            log::error!("Could not get current directory: {}", error);
+            exit(1);
+        }
+    };
+
+    let walker = WalkDir::new("/home/johan/esm-tests/win/EmptyEpsilon")
+        .max_depth(2)
+        .into_iter()
+        .filter_entry(|e| !is_hidden(e))
+        .filter_map(|e| e.ok());
+
+    for entry in walker {
+        println!("{:?}", entry);
+    }
+
+    println!("-------\n\n\n");
+
+    return true;
+}
+
+fn is_hidden(entry: &walkdir::DirEntry) -> bool {
+    entry
+        .file_name()
+        .to_str()
+        .map(|s| s.ends_with(".lua"))
+        .unwrap_or(false)
+}
+
+fn has_scripts_dir(entry: &walkdir::DirEntry) -> bool {
+    entry
+        .file_name()
+        .to_str()
+        .map(|s| s.ends_with("ee.lua") || s.ends_with("luax.lua"))
+        .unwrap_or(false)
 }

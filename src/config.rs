@@ -38,6 +38,7 @@ pub fn save_config(config: &Config) -> Result<(), Box<dyn Error>> {
     fs::write(config_path, config_content)?;
     Ok(())
 }
+
 fn get_config_path() -> std::path::PathBuf {
     get_esm_root_dir().join("config.toml")
 }

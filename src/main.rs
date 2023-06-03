@@ -8,7 +8,7 @@ use std::{fs, fs::File, io::copy, process::exit};
 use tempfile::Builder;
 
 mod dirs;
-use dirs::get_esm_scenarios_dir;
+use dirs::{get_esm_scenarios_dir, is_in_empty_epsilon_dir};
 
 mod config;
 use config::{create_config, get_config, save_config};
@@ -37,28 +37,35 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    #[clap(visible_alias = "list", about = "List installed scenarios")]
+    /// List installed scenarios
+    #[clap(visible_alias = "list")]
     Ls,
 
-    #[command(
-        about = "Add a scenario with identifier, from an URL or local file"
-    )]
+    /// Add a scenario with identifier, from an URL or local file
+    #[command()]
     Add { uri: String },
 
-    #[command(visible_alias = "remove", about = "List installed scenarios")]
+    /// Remove a scenario with identifier
+    #[command(visible_alias = "remove")]
     Rm { identifier: String },
 
-    #[command(about = "Open the scenario directory in browser")]
+    /// Open the scenario directory in browser
+    #[command()]
     OpenDir,
 
-    #[command(about = "Clean installed scenarios")]
+    /// Clean installed scenarios
+    #[command()]
     Clean,
 
-    #[command(about = "Configure esm", arg_required_else_help = true)]
+    /// Configure esm
+    #[command(arg_required_else_help = true)]
     Config {
-        #[arg(short, long, value_hint = clap::ValueHint::DirPath, help = "Path to the Empty Epsilon installation")]
+        /// Set the path to the Empty Epsilon installation
+        #[arg(short, long, value_hint = clap::ValueHint::DirPath)]
         empty_epsilon_path: Option<Option<std::path::PathBuf>>,
-        #[arg(short, long, help = "URL of the registry to use")]
+
+        /// Set the URL of the registry to use
+        #[arg(short, long)]
         registry: Option<Option<url::Url>>,
     },
 }
@@ -72,6 +79,10 @@ async fn main() -> Result<()> {
         .init();
 
     let esm_scenarios_dir = get_esm_scenarios_dir();
+
+    // check is program in run in empty epsilon directory
+
+    is_in_empty_epsilon_dir();
 
     match &cli.command {
         Commands::Ls => {
